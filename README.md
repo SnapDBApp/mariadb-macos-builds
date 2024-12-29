@@ -19,7 +19,7 @@ This repository features prebuilt tar.gz binary files for MariaDB on macOS. Thes
 ## Building from source
 1. **Download the Intended Version**:
    - Navigate to the [MariaDB archive](https://archive.mariadb.org/).
-   - Download the version you wish to build.
+   - Download the version you wish to build. For example `mariadb-11.6.2/source/mariadb-11.6.2.tar.gz`.
 2. **Set Up Build Environment for Mac**:
    - [Official MariaDB Set Up Instruction](https://mariadb.com/kb/en/Build_Environment_Setup_for_Mac/)
    - Using Brew is recommended here.
