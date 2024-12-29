@@ -9,8 +9,8 @@ This repository features prebuilt tar.gz binary files for MariaDB on macOS. Thes
 
 2. **Extract the Archive** _Example_:
    ```bash
-   tar -xvzf mariadb-11.6.2-osx10.20-arm64.tar.gz
-   cd mariadb-11.6.2-osx10.20-arm64
+   tar -xvzf mariadb-11.6.2-macos14-arm64.tar.gz
+   cd mariadb-11.6.2-macos14-arm64
 
 3. **Run MariaDB**:
    Follow the standard MariaDB documentation for setup and configuration:  
@@ -29,6 +29,7 @@ This repository features prebuilt tar.gz binary files for MariaDB on macOS. Thes
    - [Official MariaDB Tarball Build Instruction](https://mariadb.com/kb/en/creating-the-mariadb-binary-tarball/)
 5. **GitHub Release**:
    Once finished, you may wish to upload the generated .tar.gz to this GitHub repository under the "[releases](https://github.com/musa11971/mariadb-macos-builds)".
+   - Be sure to stick to the naming conventions of .tar.gz files: `mariadb-[version]-macos[osx_version]-[arm64/x86_64].tar.gz`
 
 ## Disclaimer
 These builds are unofficial and provided as-is. They are intended for convenience and may not receive the same level of testing or support as official MariaDB distributions. Use them at your own risk.
