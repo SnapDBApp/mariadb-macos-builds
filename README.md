@@ -28,7 +28,7 @@ This repository features prebuilt tar.gz binary files for MariaDB on macOS. Thes
 4. **Create the Binary Tarball**:
    - [Official MariaDB Tarball Build Instruction](https://mariadb.com/kb/en/creating-the-mariadb-binary-tarball/)
 5. **GitHub Release**:
-   Once finished, you may wish to upload the generated .tar.gz to this GitHub repository under the "[releases](/releases)".
+   Once finished, you may wish to upload the generated .tar.gz to this GitHub repository under the "[releases](https://github.com/musa11971/mariadb-macos-builds)".
 
 ## Disclaimer
 These builds are unofficial and provided as-is. They are intended for convenience and may not receive the same level of testing or support as official MariaDB distributions. Use them at your own risk.
