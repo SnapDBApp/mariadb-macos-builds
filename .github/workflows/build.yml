@@ -89,7 +89,11 @@ jobs:
             traildb/judy/judy \
             openssl \
             boost \
+            bison \
             gnutls
+
+          #brew unlink bison
+          #brew link bison --force
           
           brew_dir="/usr/local"
           if [ "${{ matrix.id }}" == "macos-arm64" ]; then
