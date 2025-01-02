@@ -12,7 +12,7 @@ IFS=$'\n' versions=($(sort -n <<< "${all_versions[*]}"))
 
 # Check if the current branch is main
 if [[ $(git branch --show-current) != "main" ]]; then
-  echo "You must be on the main branch to release."
+  echo "You must be on the main branch to create tags."
   exit 1
 fi
 
@@ -30,21 +30,13 @@ fi
 
 git fetch --prune --prune-tags > /dev/null
 
-# Verify that version does not already exist
-for version in "${versions[@]}"; do
-  if git tag --list | grep -q "$version"; then
-    echo "Version ${version} has already been released."
-    exit 1
-  fi
-done
-
 if [[ ! -e "${release_notes}" ]]; then
   echo "The release notes file ${release_notes} does not exist. Please create it before continuing."
   exit 1
 fi
 
 # Verify that the user wants to release
-echo "You are about to release the following versions:"
+echo "You are about to create tags for the following versions:"
 echo "${versions[@]}" | tr ' ' ',' | sed 's/,/, /g'
 
 read -r -p "Do you want to proceed? (y/N): " userInput
@@ -56,7 +48,12 @@ if [[ "$userInputUpper" != "Y" ]]; then
 fi
 
 for version in "${versions[@]}"; do
-  echo "Creating version ${version}"
+  if git tag --list | grep -q "$version"; then
+    echo "Warning: Version ${version} has already been tagged. Skipping."
+    continue
+  fi
+
+  echo "Creating tag ${version}"
   git tag "$version" --file="${release_notes}" --cleanup=strip
   git push origin "$version"
 done
