@@ -1,5 +1,9 @@
 # mariadb-macos-builds
 
+[![CI](https://github.com/mariadb-macos-builds/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mariadb-macos-builds/actions?query=workflow%3Aci+branch%3Amain)
+[![License](https://img.shields.io/github/license/mariadb-macos-builds)](./LICENSE)
+[![Github All Releases](https://img.shields.io/github/downloads/mariadb-macos-builds/total.svg)]()
+
 This repository features prebuilt tar.gz binary files for MariaDB on macOS. These builds are not officially offered as a download option through MariaDB archive/download channels.
 
 ## Usage

@@ -1,0 +1,163 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        default: ${{ github.ref }}
+      release:
+        description: if this is a release build
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: ${{ matrix.id }} (${{ matrix.target }}) (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        id:
+          - macos-arm64
+          - macos-x64
+
+        include:
+          # When adding a new target, define a new id above
+
+          #
+          # MacOS
+          #
+
+          - id: macos-arm64
+            target: macos15-arm64
+            os: macos-15
+            architecture: "arm64"
+
+          - id: macos-x64
+            target: macos13-x86_64
+            os: macos-13
+            architecture: "x86_64"
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup environment
+        run: |
+          version=$(echo "${{ github.ref_name }}" | grep '^[0-9]*.[0-9]*.[0-9]*$') || true
+
+          if [ -z "$version" ]; then
+            # Set default version for non-release builds
+            version="11.6.2"
+          fi
+
+          root_directory="$(pwd)"
+          archive="mariadb-$version-${{ matrix.target }}"
+          install_directory="$root_directory/$archive"
+
+          echo "ARCHIVE=$archive" | tee -a $GITHUB_ENV
+          echo "INSTALL_DIRECTORY=$install_directory" | tee -a $GITHUB_ENV
+          echo "ROOT_DIRECTORY=$root_directory" | tee -a $GITHUB_ENV
+          echo "VERSION=$version" | tee -a $GITHUB_ENV
+
+      #
+      # MacOS Build
+      #
+
+      - name: Get mariadb source code (MacOS)
+        if: ${{ startsWith(matrix.id, 'macos-') }}
+        run: |
+          source_directory="$ROOT_DIRECTORY/mariadb-src"
+          tag="mariadb-$VERSION"
+
+          git clone --depth 1 --recurse-submodules --branch $tag -c advice.detachedHead=false https://github.com/MariaDB/server.git "$source_directory"
+          echo "SOURCE_DIRECTORY=$source_directory" | tee -a $GITHUB_ENV
+
+      - name: Configure build (MacOS)
+        if: ${{ startsWith(matrix.id, 'macos-') }}
+        run: |
+          brew install \
+            cmake \
+            jemalloc \
+            traildb/judy/judy \
+            openssl \
+            boost \
+            gnutls
+          
+          brew_dir="/usr/local"
+          if [ "${{ matrix.id }}" == "macos-arm64" ]; then
+            brew_dir="/opt/homebrew"
+          fi
+          brew_opt_dir="$brew_dir/opt"          
+          ls -l "$brew_opt_dir"
+
+      - name: Build (MacOS)
+        if: ${{ startsWith(matrix.id, 'macos-') }}
+        run: |
+          major_version=$(echo "$POSTGRESQL_VERSION" | awk -F. '{print $1}')
+          mkdir -p "$INSTALL_DIRECTORY"
+
+          cd "$INSTALL_DIRECTORY"
+          cmake "$SOURCE_DIRECTORY" -DBUILD_CONFIG=mysql_release -DOPENSSL_ROOT_DIR=/usr/local/openssl
+
+          cp "$SOURCE_DIRECTORY/COPYING" "$INSTALL_DIRECTORY"
+          cp "$SOURCE_DIRECTORY/CREDITS" "$INSTALL_DIRECTORY"
+          cd "$ROOT_DIRECTORY"
+
+      #
+      # Package
+      #
+
+      - name: Prepare archive
+        run: |
+          cp $ROOT_DIRECTORY/{README.md,LICENSE} "$INSTALL_DIRECTORY"
+          ls -l "$INSTALL_DIRECTORY/"
+
+      # The .tar.gz archive is the primary archive for all platforms.  This archive
+      # provides a consistent experience for programmatic cases (e.g. embedded).
+      - name: Build archive (MacOS)
+        if: ${{ startsWith(matrix.id, 'macos-') }}
+        run: |
+          tar czf "$ARCHIVE.tar.gz" "$ARCHIVE"
+          shasum -a 256 "$ARCHIVE.tar.gz" > "$ARCHIVE.tar.gz.sha256"
+          echo "ASSET=$ARCHIVE.tar.gz" | tee -a $GITHUB_ENV
+          echo "ASSET_SUM=$ARCHIVE.tar.gz.sha256" | tee -a $GITHUB_ENV
+
+      #
+      # Test
+      #
+
+      - name: Test the binary file cpu architecture
+        run: |
+          mariadb_file="$INSTALL_DIRECTORY/bin/mariadb"
+          
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            cpu_architecture=$(readelf --file-header "$mariadb_file" | grep 'Machine:' | sed -e 's/ *Machine:\ *//g')
+          else
+            cpu_architecture=$(file "$mariadb_file" | awk '{print $5}')
+          fi
+          
+          echo "CPU_ARCHITECTURE=$cpu_architecture" | tee -a $GITHUB_ENV
+          
+          if [[ "$cpu_architecture" != *"${{ matrix.architecture }}"* ]]; then
+            echo "ERROR: CPU architecture ($cpu_architecture) does not match expected architecture (${{ matrix.architecture }})"
+            exit 1
+          fi
+          
+      #
+      # Release
+      #
+
+      - name: Upload release archive
+        if: ${{ inputs.release == true }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$VERSION" ${{ env.ASSET }} ${{ env.ASSET_SUM }}
