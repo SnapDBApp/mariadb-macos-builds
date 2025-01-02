@@ -28,6 +28,8 @@ if [[ $(git rev-parse HEAD) != $(git rev-parse origin/main) ]]; then
   exit 1
 fi
 
+git fetch --prune --prune-tags > /dev/null
+
 # Verify that version does not already exist
 for version in "${versions[@]}"; do
   if git tag --list | grep -q "$version"; then
