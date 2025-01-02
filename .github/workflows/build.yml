@@ -20,7 +20,7 @@ jobs:
       matrix:
         id:
           - macos-arm64
-          - macos-x64
+          #- macos-x64
 
         include:
           # When adding a new target, define a new id above
@@ -33,16 +33,12 @@ jobs:
             target: macos15-arm64
             os: macos-15
             architecture: "arm64"
-
-          - id: macos-x64
-            target: macos13-x86_64
-            os: macos-13
-            architecture: "x86_64"
-
-        exclude:
-          - id: macos-x64 
           # temporary disable x64 due to infinite load when 'cpack'ing
           # example: https://github.com/musa11971/mariadb-macos-builds/actions/runs/12585061713/job/35076028048
+          #- id: macos-x64
+          #  target: macos13-x86_64
+          #  os: macos-13
+          #  architecture: "x86_64"
 
     defaults:
       run:
