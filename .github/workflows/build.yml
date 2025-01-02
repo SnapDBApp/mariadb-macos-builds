@@ -99,8 +99,7 @@ jobs:
             bison \
             gnutls
 
-          brew unlink bison
-          brew link bison --force
+          export PATH="$(brew --prefix bison)/bin:$PATH"
 
       - name: Build (MacOS)
         if: ${{ startsWith(matrix.id, 'macos-') }}
