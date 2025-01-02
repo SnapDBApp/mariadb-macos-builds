@@ -30,13 +30,13 @@ jobs:
           #
 
           - id: macos-arm64
-            target: macos15-arm64
+            target: aarch64-apple-darwin
             os: macos-15
             architecture: "arm64"
-          # temporary disable x64 due to infinite load when 'cpack'ing
+          # temporary disable x86 due to infinite load when 'cpack'ing
           # example: https://github.com/musa11971/mariadb-macos-builds/actions/runs/12585061713/job/35076028048
           #- id: macos-x64
-          #  target: macos13-x86_64
+          #  target: x86_64-apple-darwin
           #  os: macos-13
           #  architecture: "x86_64"
 
