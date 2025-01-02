@@ -39,6 +39,11 @@ jobs:
             os: macos-13
             architecture: "x86_64"
 
+        exclude:
+          - id: macos-x64 
+          # temporary disable x64 due to infinite load when 'cpack'ing
+          # example: https://github.com/musa11971/mariadb-macos-builds/actions/runs/12585061713/job/35076028048
+
     defaults:
       run:
         shell: bash
