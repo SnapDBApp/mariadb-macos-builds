@@ -110,6 +110,7 @@ jobs:
 
           cd "$INSTALL_DIRECTORY"
           cmake "$SOURCE_DIRECTORY" -DBUILD_CONFIG=mysql_release -DOPENSSL_ROOT_DIR=/usr/local/openssl
+          make package
 
           cp "$SOURCE_DIRECTORY/COPYING" "$INSTALL_DIRECTORY"
           cp "$SOURCE_DIRECTORY/CREDITS" "$INSTALL_DIRECTORY"
