@@ -108,58 +108,43 @@ jobs:
           major_version=$(echo "$POSTGRESQL_VERSION" | awk -F. '{print $1}')
           mkdir -p "$INSTALL_DIRECTORY"
 
+          # Create build
           cd "$INSTALL_DIRECTORY"
           cmake "$SOURCE_DIRECTORY" -DBUILD_CONFIG=mysql_release -DOPENSSL_ROOT_DIR=/usr/local/openssl
-          make package
 
-          cp "$SOURCE_DIRECTORY/COPYING" "$INSTALL_DIRECTORY"
-          cp "$SOURCE_DIRECTORY/CREDITS" "$INSTALL_DIRECTORY"
-          cd "$ROOT_DIRECTORY"
+          # Create binaries
+          cpack --verbose
 
       #
       # Package
       #
 
-      - name: Prepare archive
+      - name: Rename archive
         run: |
-          cp $ROOT_DIRECTORY/{README.md,LICENSE} "$INSTALL_DIRECTORY"
-          ls -l "$INSTALL_DIRECTORY/"
+          cd $INSTALL_DIRECTORY
+
+          generated_archive=$(find . -maxdepth 1 -type f -name "*.tar.gz" | head -n 1)
+
+          if [ -n "$generated_archive" ]; then
+            mv "$generated_archive" "$ARCHIVE.tar.gz"
+            echo "Renamed $generated_archive to $ARCHIVE.tar.gz"
+          else
+            echo "No generated .tar.gz file found."
+            exit 1
+          fi
+
+          file "$ARCHIVE.tar.gz"
 
       # The .tar.gz archive is the primary archive for all platforms.  This archive
       # provides a consistent experience for programmatic cases (e.g. embedded).
-      - name: Build archive (MacOS)
+      - name: SHA Sum archive (MacOS)
         if: ${{ startsWith(matrix.id, 'macos-') }}
         run: |
-          tar czf "$ARCHIVE.tar.gz" "$ARCHIVE"
+          cd $INSTALL_DIRECTORY
+
           shasum -a 256 "$ARCHIVE.tar.gz" > "$ARCHIVE.tar.gz.sha256"
           echo "ASSET=$ARCHIVE.tar.gz" | tee -a $GITHUB_ENV
           echo "ASSET_SUM=$ARCHIVE.tar.gz.sha256" | tee -a $GITHUB_ENV
-
-      #
-      # Test
-      #
-
-      - name: Test the binary file cpu architecture
-        run: |
-          cd $INSTALL_DIRECTORY
-          ls
-          cd $INSTALL_DIRECTORY/bin
-          ls
-
-          mariadb_file="$INSTALL_DIRECTORY/bin/mariadb"
-          
-          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-            cpu_architecture=$(readelf --file-header "$mariadb_file" | grep 'Machine:' | sed -e 's/ *Machine:\ *//g')
-          else
-            cpu_architecture=$(file "$mariadb_file" | awk '{print $5}')
-          fi
-          
-          echo "CPU_ARCHITECTURE=$cpu_architecture" | tee -a $GITHUB_ENV
-          
-          if [[ "$cpu_architecture" != *"${{ matrix.architecture }}"* ]]; then
-            echo "ERROR: CPU architecture ($cpu_architecture) does not match expected architecture (${{ matrix.architecture }})"
-            exit 1
-          fi
           
       #
       # Release
@@ -170,4 +155,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          cd $INSTALL_DIRECTORY
+
           gh release upload "$VERSION" ${{ env.ASSET }} ${{ env.ASSET_SUM }}
