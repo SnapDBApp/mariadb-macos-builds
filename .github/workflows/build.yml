@@ -140,6 +140,11 @@ jobs:
 
       - name: Test the binary file cpu architecture
         run: |
+          cd $INSTALL_DIRECTORY
+          ls
+          cd $INSTALL_DIRECTORY/bin
+          ls
+
           mariadb_file="$INSTALL_DIRECTORY/bin/mariadb"
           
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
