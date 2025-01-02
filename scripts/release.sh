@@ -3,7 +3,7 @@
 set -e
 
 all_versions=( \
-  "11.8.0" "11.7.1" \
+  "11.8.0" \
 )
 release_notes="release_notes.md"
 
