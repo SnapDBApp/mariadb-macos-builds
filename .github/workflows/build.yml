@@ -83,6 +83,13 @@ jobs:
       - name: Configure build (MacOS)
         if: ${{ startsWith(matrix.id, 'macos-') }}
         run: |
+          brew_dir="/usr/local"
+          if [ "${{ matrix.id }}" == "macos-arm64" ]; then
+            brew_dir="/opt/homebrew"
+          fi
+          brew_opt_dir="$brew_dir/opt"          
+          ls -l "$brew_opt_dir"
+
           brew install \
             cmake \
             jemalloc \
@@ -92,15 +99,8 @@ jobs:
             bison \
             gnutls
 
-          #brew unlink bison
-          #brew link bison --force
-          
-          brew_dir="/usr/local"
-          if [ "${{ matrix.id }}" == "macos-arm64" ]; then
-            brew_dir="/opt/homebrew"
-          fi
-          brew_opt_dir="$brew_dir/opt"          
-          ls -l "$brew_opt_dir"
+          brew unlink bison
+          brew link bison --force
 
       - name: Build (MacOS)
         if: ${{ startsWith(matrix.id, 'macos-') }}
