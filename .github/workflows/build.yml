@@ -101,8 +101,9 @@ jobs:
 
           brew unlink bison
           
-          echo 'export PATH="$(brew --prefix bison)/bin:$PATH"' >> ~/.bash_profile
-          source .bash_profile
+          export PATH="$(brew --prefix bison)/bin:$PATH"
+          export LDFLAGS="-L$(brew --prefix bison)/lib"
+          export LDFLAGS="-L$(brew --prefix bison)/lib"
           echo $PATH
           bison -v
 
