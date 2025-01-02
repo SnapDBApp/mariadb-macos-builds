@@ -118,7 +118,7 @@ jobs:
           cmake "$SOURCE_DIRECTORY" -DBUILD_CONFIG=mysql_release -DOPENSSL_ROOT_DIR=/usr/local/openssl
 
           # Create binaries
-          cpack --verbose
+          cpack -G TGZ --verbose --trace-expand -D CPACK_THREADS=0
 
       #
       # Package
